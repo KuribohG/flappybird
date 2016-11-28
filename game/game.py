@@ -28,21 +28,21 @@ def load_resources():
     IMAGES, MASKS = {}, {}
     
     IMAGES['digits'] = tuple([
-        pygame.image.load('resources/sprites/'+str(i)+'.png').convert_alpha()
+        pygame.image.load('game/resources/sprites/'+str(i)+'.png').convert_alpha()
             for i in range(10)])
 
-    IMAGES['base'] = pygame.image.load('resources/sprites/base.png').convert_alpha()
+    IMAGES['base'] = pygame.image.load('game/resources/sprites/base.png').convert_alpha()
 
     IMAGES['player'] = (
-        pygame.image.load('resources/sprites/redbird-downflap.png').convert_alpha(), 
-        pygame.image.load('resources/sprites/redbird-midflap.png').convert_alpha(), 
-        pygame.image.load('resources/sprites/redbird-upflap.png').convert_alpha(), 
+        pygame.image.load('game/resources/sprites/redbird-downflap.png').convert_alpha(), 
+        pygame.image.load('game/resources/sprites/redbird-midflap.png').convert_alpha(), 
+        pygame.image.load('game/resources/sprites/redbird-upflap.png').convert_alpha(), 
     )
 
-    IMAGES['lower_pipe'] = pygame.image.load('resources/sprites/pipe-green.png').convert_alpha()
+    IMAGES['lower_pipe'] = pygame.image.load('game/resources/sprites/pipe-green.png').convert_alpha()
     IMAGES['upper_pipe'] = pygame.transform.rotate(IMAGES['lower_pipe'], 180)
 
-    IMAGES['background'] = pygame.image.load('resources/sprites/background-black.png').convert_alpha()
+    IMAGES['background'] = pygame.image.load('game/resources/sprites/background-black.png').convert_alpha()
 
 #   for k, v in IMAGES.items():
 #       if isinstance(v, tuple):
@@ -124,6 +124,9 @@ class GameState:
             startx += digit_width
 
     def frame_step(self, input_actions):
+        reward = 0.1
+        terminal = False
+
         pygame.event.pump()
 
         assert sum(input_actions) == 1, "Which action would you take?"
@@ -147,6 +150,7 @@ class GameState:
 
         if isCrash:
             terminal = True
+            reward = -1
             self.__init__()
 
         if 130 < self.upperPipes[self.nextPipe]['x'] < 135:
@@ -178,8 +182,12 @@ class GameState:
             uPipe['x'] += self.pipeVelX
             lPipe['x'] += self.pipeVelX
 
+        img = pygame.surfarray.array3d(pygame.display.get_surface())
+
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+        
+        return img, reward, terminal
 
 def main():
     game_state = GameState()
